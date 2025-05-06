@@ -12,14 +12,17 @@ import {
   Button,
   StyleSheet,
   ScrollView,
+
 } from "react-native";
-// import MapView, { Marker } from "react-native-maps"; // 🔒 Deactivated for now
+ import MapView, { Marker } from "react-native-maps";
+// downloaded the package using this command in terminal: "npx expo install react-native-maps"
 
 export default function Index() {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [forecast, setForecast] = useState("");
   const [locationName, setLocationName] = useState("");
+  const [showMap, setShowMap] = useState(false);
 
   const fetchForecast = async () => {
     const lat = parseFloat(latitude);
@@ -57,7 +60,11 @@ export default function Index() {
       console.error("Error:", error);
       setForecast("Error fetching forecast");
     }
+      setShowMap(true);
   };
+
+  const isCoordsValid = !isNaN(parseFloat(latitude)) && !isNaN(parseFloat(longitude));
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -79,7 +86,25 @@ export default function Index() {
       />
 
       <Button title="Get Forecast" onPress={fetchForecast} />
-
+      {showMap && isCoordsValid && (
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude),
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }}
+        >
+          <Marker
+            coordinate={{
+              latitude: parseFloat(latitude),
+              longitude: parseFloat(longitude),
+            }}
+            title={locationName || "Selected Location"}
+          />
+        </MapView>
+      )}
       {forecast !== "" && (
         <View style={styles.forecastContainer}>
           <Text style={styles.location}>{locationName}</Text>
@@ -122,4 +147,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 10,
   },
+  map: {
+    width: "90%",
+    height: 300,
+    marginTop: 20,
+    borderRadius: 10,
+},
 });
